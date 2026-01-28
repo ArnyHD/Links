@@ -1,0 +1,25 @@
+{
+  "name": "knowledge-graph-platform",
+  "version": "0.1.0",
+  "description": "Universal platform for scientific theories and knowledge graphs",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "npm run dev --workspace=@kgp/backend",
+    "dev:frontend": "npm run dev --workspace=@kgp/frontend",
+    "build": "npm run build --workspaces",
+    "test": "npm run test --workspaces"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "app": {
+    "title": "Knowledge Graph Platform",
+    "description": "Universal platform for scientific theories and knowledge graphs"
+  },
+  "nav": {
+    "home": "Home",
+    "domains": "Domains",
+    "about": "About"
+  },
+  "domains": {
+    "title": "Domains",
+    "create": "Create Domain",
+    "empty": "No domains yet",
+    "viewGraph": "View Graph"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit"
+  }
+}
