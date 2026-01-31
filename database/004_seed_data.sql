@@ -56,7 +56,7 @@ INSERT INTO oauth_accounts (
     raw_data
 )
 VALUES (
-    'o0000000-0000-0000-0000-000000000001',
+    'b0000000-0000-0000-0000-000000000001',
     'a0000000-0000-0000-0000-000000000002',  -- test.oauth@example.com
     'google',
     '1234567890',  -- Google user ID (sub)
@@ -112,7 +112,7 @@ VALUES (
 -- Node Type: Axiom (Аксиома)
 INSERT INTO node_types (id, name, slug, description, translations, icon, color, schema, "order", domain_id)
 VALUES (
-    'n0000000-0000-0000-0000-000000000001',
+    'c0000000-0000-0000-0000-000000000001',
     'Axiom',
     'axiom',
     'Fundamental postulate or principle',
@@ -146,7 +146,7 @@ VALUES (
 -- Node Type: Theory (Теория)
 INSERT INTO node_types (id, name, slug, description, translations, icon, color, schema, "order", domain_id)
 VALUES (
-    'n0000000-0000-0000-0000-000000000002',
+    'c0000000-0000-0000-0000-000000000002',
     'Theory',
     'theory',
     'Scientific theory or theoretical framework',
@@ -183,7 +183,7 @@ VALUES (
 -- Node Type: Experiment (Эксперимент)
 INSERT INTO node_types (id, name, slug, description, translations, icon, color, schema, "order", domain_id)
 VALUES (
-    'n0000000-0000-0000-0000-000000000003',
+    'c0000000-0000-0000-0000-000000000003',
     'Experiment',
     'experiment',
     'Scientific experiment with measurements',
@@ -223,7 +223,7 @@ VALUES (
 -- Node Type: Interpretation (Трактовка)
 INSERT INTO node_types (id, name, slug, description, translations, icon, color, schema, "order", domain_id)
 VALUES (
-    'n0000000-0000-0000-0000-000000000004',
+    'c0000000-0000-0000-0000-000000000004',
     'Interpretation',
     'interpretation',
     'Interpretation of experimental results',
@@ -254,7 +254,7 @@ VALUES (
 -- Node Type: Concept (Концепция)
 INSERT INTO node_types (id, name, slug, description, translations, icon, color, schema, "order", domain_id)
 VALUES (
-    'n0000000-0000-0000-0000-000000000005',
+    'c0000000-0000-0000-0000-000000000005',
     'Concept',
     'concept',
     'High-level worldview or paradigm',
