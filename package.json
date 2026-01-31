@@ -1,25 +1,28 @@
 {
   "name": "knowledge-graph-platform",
   "version": "0.1.0",
-  "description": "Universal platform for scientific theories and knowledge graphs",
-  "private": true,
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
+  "description": "Universal platform for knowledge graphs - created for alternative physics theories and aether dynamics",
+  "main": "index.js",
   "scripts": {
-    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
-    "dev:backend": "npm run dev --workspace=@kgp/backend",
-    "dev:frontend": "npm run dev --workspace=@kgp/frontend",
-    "build": "npm run build --workspaces",
-    "test": "npm run test --workspaces"
+    "db:test": "node database/test-connection.js",
+    "db:setup": "cd database && psql -h %DB_HOST% -U %DB_USERNAME% -d %DB_DATABASE% -f run_all.sql",
+    "db:reset": "cd database && psql -h %DB_HOST% -U %DB_USERNAME% -d %DB_DATABASE% -f reset_database.sql"
   },
-  "devDependencies": {
-    "concurrently": "^8.2.2",
-    "typescript": "^5.3.3"
+  "keywords": [
+    "knowledge-graph",
+    "graph-database",
+    "physics",
+    "theories",
+    "aether-dynamics"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "pg": "^8.11.3",
+    "dotenv": "^16.3.1"
   },
+  "devDependencies": {},
   "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=9.0.0"
+    "node": ">=18.0.0"
   }
 }
