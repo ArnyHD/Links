@@ -202,8 +202,152 @@ curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \
 
 **Доступ:**
 - Требует валидный JWT токен
-- Доступен всем авторизованным пользователям независимо от роли
-- Возвращает все домены с информацией о создателе
+- Доступен всем авторизованным пользователям
+
+#### `GET /domains/:id`
+Получить один домен по ID.
+
+**Параметры:**
+- `id` - UUID домена
+
+**Пример:**
+```bash
+curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  http://localhost:3000/domains/550e8400-e29b-41d4-a716-446655440000
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "name": "Physics Theories",
+    "slug": "physics-theories",
+    "description": "Classical and modern physics theories",
+    "is_public": true,
+    "is_active": true,
+    "creator": {
+      "id": "...",
+      "email": "user@example.com",
+      "username": "user"
+    }
+  }
+}
+```
+
+#### `POST /domains`
+Создать новый домен.
+
+**Заголовки:**
+```
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: application/json
+```
+
+**Body:**
+```json
+{
+  "name": "Mathematics",
+  "slug": "mathematics",
+  "description": "Mathematical theories and proofs",
+  "is_public": true,
+  "is_active": true,
+  "translations": {},
+  "settings": {}
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Domain created successfully",
+  "data": {
+    "id": "...",
+    "name": "Mathematics",
+    "slug": "mathematics",
+    "description": "Mathematical theories and proofs",
+    "creator_id": "...",
+    "created_at": "2024-02-01T10:00:00.000Z"
+  }
+}
+```
+
+**Обязательные поля:**
+- `name` - название домена
+- `slug` - URL-friendly идентификатор
+
+**Опциональные поля:**
+- `description` - описание
+- `is_public` - публичный домен (default: true)
+- `is_active` - активный (default: true)
+- `translations` - переводы названия/описания
+- `settings` - настройки домена
+
+#### `PUT /domains/:id`
+Обновить существующий домен.
+
+**Параметры:**
+- `id` - UUID домена
+
+**Заголовки:**
+```
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: application/json
+```
+
+**Body:** (все поля опциональны)
+```json
+{
+  "name": "Updated Name",
+  "description": "Updated description",
+  "is_active": false
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Domain updated successfully",
+  "data": {
+    "id": "...",
+    "name": "Updated Name",
+    "description": "Updated description",
+    "is_active": false,
+    "updated_at": "2024-02-01T11:00:00.000Z"
+  }
+}
+```
+
+**Ограничения:**
+- Только создатель домена может его обновлять
+- Возвращает `403 Forbidden` если пользователь не создатель
+
+#### `DELETE /domains/:id`
+Удалить домен.
+
+**Параметры:**
+- `id` - UUID домена
+
+**Заголовки:**
+```
+Authorization: Bearer YOUR_JWT_TOKEN
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Domain deleted successfully"
+}
+```
+
+**Ограничения:**
+- Только создатель домена может его удалить
+- Возвращает `403 Forbidden` если пользователь не создатель
+- Возвращает `404 Not Found` если домен не существует
 
 ### Тестовые endpoints
 
