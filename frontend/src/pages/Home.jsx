@@ -124,7 +124,7 @@ function Home() {
                       Открыть
                     </button>
                     <button className="action-button secondary">
-                      Подробнее
+                      Подробнее!
                     </button>
                   </div>
                 </div>
