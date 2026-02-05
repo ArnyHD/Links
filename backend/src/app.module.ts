@@ -4,7 +4,9 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { DomainsModule } from './domains/domains.module';
-import { User, OAuthAccount, Domain } from './entities';
+import { NodeTypesModule } from './node-types/node-types.module';
+import { EdgeTypesModule } from './edge-types/edge-types.module';
+import { User, OAuthAccount, Domain, NodeType, EdgeType } from './entities';
 
 @Module({
   imports: [
@@ -15,12 +17,14 @@ import { User, OAuthAccount, Domain } from './entities';
       username: process.env.DB_USERNAME || 'postgres',
       password: process.env.DB_PASSWORD || 'postgres',
       database: process.env.DB_DATABASE || 'knowledge_graph',
-      entities: [User, OAuthAccount, Domain],
+      entities: [User, OAuthAccount, Domain, NodeType, EdgeType],
       synchronize: false, // Используем миграции вместо автосинхронизации
       logging: process.env.NODE_ENV === 'development',
     }),
     AuthModule,
     DomainsModule,
+    NodeTypesModule,
+    EdgeTypesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

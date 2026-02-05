@@ -349,6 +349,539 @@ Authorization: Bearer YOUR_JWT_TOKEN
 - Возвращает `403 Forbidden` если пользователь не создатель
 - Возвращает `404 Not Found` если домен не существует
 
+### Node Types (Типы узлов)
+
+Управление типами узлов графа знаний. Типы узлов определяют категории для узлов в конкретном домене (например: Теория, Эксперимент, Аксиома).
+
+#### `GET /node-types`
+Получить список всех типов узлов. Требует JWT аутентификацию.
+
+**Заголовки:**
+```
+Authorization: Bearer YOUR_JWT_TOKEN
+```
+
+**Query параметры (опциональные):**
+- `domain_id` - UUID домена для фильтрации
+
+**Примеры запросов:**
+```bash
+# Получить все типы узлов
+curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  http://localhost:3000/node-types
+
+# Получить типы узлов для конкретного домена
+curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  http://localhost:3000/node-types?domain_id=550e8400-e29b-41d4-a716-446655440000
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "count": 3,
+  "data": [
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440001",
+      "name": "Theory",
+      "slug": "theory",
+      "description": "Theoretical framework or model",
+      "translations": {},
+      "icon": "science",
+      "color": "#1890ff",
+      "schema": {},
+      "order": 0,
+      "domain_id": "550e8400-e29b-41d4-a716-446655440000",
+      "created_at": "2024-02-01T10:00:00.000Z",
+      "updated_at": "2024-02-01T10:00:00.000Z",
+      "domain": {
+        "id": "550e8400-e29b-41d4-a716-446655440000",
+        "name": "Physics Theories",
+        "slug": "physics-theories"
+      }
+    }
+  ]
+}
+```
+
+**Доступ:**
+- Требует валидный JWT токен
+- Доступен всем авторизованным пользователям
+
+#### `GET /node-types/:id`
+Получить один тип узла по ID.
+
+**Параметры:**
+- `id` - UUID типа узла
+
+**Пример:**
+```bash
+curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  http://localhost:3000/node-types/660e8400-e29b-41d4-a716-446655440001
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "660e8400-e29b-41d4-a716-446655440001",
+    "name": "Theory",
+    "slug": "theory",
+    "description": "Theoretical framework or model",
+    "icon": "science",
+    "color": "#1890ff",
+    "schema": {},
+    "order": 0,
+    "domain_id": "550e8400-e29b-41d4-a716-446655440000",
+    "domain": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "name": "Physics Theories"
+    }
+  }
+}
+```
+
+#### `GET /node-types/by-domain/:domainId`
+Получить все типы узлов для конкретного домена.
+
+**Параметры:**
+- `domainId` - UUID домена
+
+**Пример:**
+```bash
+curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  http://localhost:3000/node-types/by-domain/550e8400-e29b-41d4-a716-446655440000
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "count": 3,
+  "data": [
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440001",
+      "name": "Theory",
+      "slug": "theory",
+      "order": 0,
+      "color": "#1890ff",
+      "domain_id": "550e8400-e29b-41d4-a716-446655440000"
+    },
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440002",
+      "name": "Experiment",
+      "slug": "experiment",
+      "order": 1,
+      "color": "#52c41a",
+      "domain_id": "550e8400-e29b-41d4-a716-446655440000"
+    }
+  ]
+}
+```
+
+#### `POST /node-types`
+Создать новый тип узла.
+
+**Заголовки:**
+```
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: application/json
+```
+
+**Body:**
+```json
+{
+  "name": "Experiment",
+  "slug": "experiment",
+  "description": "Experimental validation",
+  "domain_id": "550e8400-e29b-41d4-a716-446655440000",
+  "icon": "experiment",
+  "color": "#52c41a",
+  "order": 1,
+  "schema": {
+    "type": "object",
+    "properties": {
+      "methodology": { "type": "string" },
+      "date": { "type": "string" }
+    }
+  },
+  "translations": {}
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "NodeType created successfully",
+  "data": {
+    "id": "660e8400-e29b-41d4-a716-446655440002",
+    "name": "Experiment",
+    "slug": "experiment",
+    "description": "Experimental validation",
+    "domain_id": "550e8400-e29b-41d4-a716-446655440000",
+    "icon": "experiment",
+    "color": "#52c41a",
+    "order": 1,
+    "created_at": "2024-02-01T10:00:00.000Z"
+  }
+}
+```
+
+**Обязательные поля:**
+- `name` - название типа узла
+- `slug` - URL-friendly идентификатор
+- `domain_id` - UUID домена
+
+**Опциональные поля:**
+- `description` - описание типа
+- `icon` - иконка (например: "science", "experiment")
+- `color` - цвет в hex формате (default: "#1890ff")
+- `order` - порядок отображения (default: 0)
+- `schema` - JSON Schema для валидации полей узлов этого типа
+- `translations` - переводы названия/описания
+
+**Ограничения:**
+- `slug` должен быть уникальным в пределах одного домена
+- Возвращает `409 Conflict` если slug уже существует в домене
+
+#### `PUT /node-types/:id`
+Обновить существующий тип узла.
+
+**Параметры:**
+- `id` - UUID типа узла
+
+**Заголовки:**
+```
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: application/json
+```
+
+**Body:** (все поля опциональны)
+```json
+{
+  "name": "Updated Theory",
+  "description": "Updated description",
+  "color": "#ff4d4f",
+  "order": 5
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "NodeType updated successfully",
+  "data": {
+    "id": "660e8400-e29b-41d4-a716-446655440001",
+    "name": "Updated Theory",
+    "description": "Updated description",
+    "color": "#ff4d4f",
+    "order": 5,
+    "updated_at": "2024-02-01T11:00:00.000Z"
+  }
+}
+```
+
+#### `DELETE /node-types/:id`
+Удалить тип узла.
+
+**Параметры:**
+- `id` - UUID типа узла
+
+**Заголовки:**
+```
+Authorization: Bearer YOUR_JWT_TOKEN
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "NodeType deleted successfully"
+}
+```
+
+**Ограничения:**
+- Возвращает `404 Not Found` если тип узла не существует
+- Если к типу узла привязаны существующие узлы, удаление будет заблокировано БД (RESTRICT constraint)
+
+### Edge Types (Типы связей)
+
+Управление типами связей между узлами графа знаний. Типы связей определяют семантику отношений между узлами (например: Поддерживает, Противоречит, Выводится из).
+
+#### `GET /edge-types`
+Получить список всех типов связей. Требует JWT аутентификацию.
+
+**Заголовки:**
+```
+Authorization: Bearer YOUR_JWT_TOKEN
+```
+
+**Query параметры (опциональные):**
+- `domain_id` - UUID домена для фильтрации
+
+**Примеры запросов:**
+```bash
+# Получить все типы связей
+curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  http://localhost:3000/edge-types
+
+# Получить типы связей для конкретного домена
+curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  http://localhost:3000/edge-types?domain_id=550e8400-e29b-41d4-a716-446655440000
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "count": 3,
+  "data": [
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440001",
+      "name": "Supports",
+      "slug": "supports",
+      "description": "Evidence that supports the theory",
+      "translations": {},
+      "semantic_type": "supports",
+      "icon": "arrow-up",
+      "color": "#52c41a",
+      "weight": 1.0,
+      "is_directed": true,
+      "domain_id": "550e8400-e29b-41d4-a716-446655440000",
+      "created_at": "2024-02-01T10:00:00.000Z",
+      "updated_at": "2024-02-01T10:00:00.000Z",
+      "domain": {
+        "id": "550e8400-e29b-41d4-a716-446655440000",
+        "name": "Physics Theories",
+        "slug": "physics-theories"
+      }
+    }
+  ]
+}
+```
+
+**Доступ:**
+- Требует валидный JWT токен
+- Доступен всем авторизованным пользователям
+
+#### `GET /edge-types/:id`
+Получить один тип связи по ID.
+
+**Параметры:**
+- `id` - UUID типа связи
+
+**Пример:**
+```bash
+curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  http://localhost:3000/edge-types/770e8400-e29b-41d4-a716-446655440001
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "770e8400-e29b-41d4-a716-446655440001",
+    "name": "Supports",
+    "slug": "supports",
+    "description": "Evidence that supports the theory",
+    "semantic_type": "supports",
+    "icon": "arrow-up",
+    "color": "#52c41a",
+    "weight": 1.0,
+    "is_directed": true,
+    "domain_id": "550e8400-e29b-41d4-a716-446655440000",
+    "domain": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "name": "Physics Theories"
+    }
+  }
+}
+```
+
+#### `GET /edge-types/by-domain/:domainId`
+Получить все типы связей для конкретного домена.
+
+**Параметры:**
+- `domainId` - UUID домена
+
+**Пример:**
+```bash
+curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  http://localhost:3000/edge-types/by-domain/550e8400-e29b-41d4-a716-446655440000
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "count": 3,
+  "data": [
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440001",
+      "name": "Supports",
+      "slug": "supports",
+      "semantic_type": "supports",
+      "weight": 1.0,
+      "color": "#52c41a",
+      "is_directed": true,
+      "domain_id": "550e8400-e29b-41d4-a716-446655440000"
+    },
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440002",
+      "name": "Contradicts",
+      "slug": "contradicts",
+      "semantic_type": "contradicts",
+      "weight": -1.0,
+      "color": "#ff4d4f",
+      "is_directed": true,
+      "domain_id": "550e8400-e29b-41d4-a716-446655440000"
+    }
+  ]
+}
+```
+
+#### `POST /edge-types`
+Создать новый тип связи.
+
+**Заголовки:**
+```
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: application/json
+```
+
+**Body:**
+```json
+{
+  "name": "Derives From",
+  "slug": "derives-from",
+  "description": "One concept derives from another",
+  "domain_id": "550e8400-e29b-41d4-a716-446655440000",
+  "semantic_type": "derives_from",
+  "icon": "arrow-right",
+  "color": "#1890ff",
+  "weight": 0.5,
+  "is_directed": true,
+  "translations": {}
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "EdgeType created successfully",
+  "data": {
+    "id": "770e8400-e29b-41d4-a716-446655440003",
+    "name": "Derives From",
+    "slug": "derives-from",
+    "description": "One concept derives from another",
+    "domain_id": "550e8400-e29b-41d4-a716-446655440000",
+    "semantic_type": "derives_from",
+    "icon": "arrow-right",
+    "color": "#1890ff",
+    "weight": 0.5,
+    "is_directed": true,
+    "created_at": "2024-02-01T10:00:00.000Z"
+  }
+}
+```
+
+**Обязательные поля:**
+- `name` - название типа связи
+- `slug` - URL-friendly идентификатор
+- `domain_id` - UUID домена
+
+**Опциональные поля:**
+- `description` - описание типа связи
+- `semantic_type` - семантический тип (default: "custom")
+  - Допустимые значения: `supports`, `contradicts`, `derives_from`, `part_of`, `requires`, `custom`
+- `icon` - иконка (например: "arrow-up", "arrow-down")
+- `color` - цвет в hex формате (default: "#52c41a")
+- `weight` - вес связи для расчета рейтингов (default: 0)
+- `is_directed` - направленная ли связь (default: true)
+- `translations` - переводы названия/описания
+
+**Ограничения:**
+- `slug` должен быть уникальным в пределах одного домена
+- Возвращает `409 Conflict` если slug уже существует в домене
+- `semantic_type` должен быть одним из допустимых значений
+
+#### `PUT /edge-types/:id`
+Обновить существующий тип связи.
+
+**Параметры:**
+- `id` - UUID типа связи
+
+**Заголовки:**
+```
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: application/json
+```
+
+**Body:** (все поля опциональны)
+```json
+{
+  "name": "Updated Supports",
+  "description": "Updated description",
+  "color": "#73d13d",
+  "weight": 1.5
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "EdgeType updated successfully",
+  "data": {
+    "id": "770e8400-e29b-41d4-a716-446655440001",
+    "name": "Updated Supports",
+    "description": "Updated description",
+    "color": "#73d13d",
+    "weight": 1.5,
+    "updated_at": "2024-02-01T11:00:00.000Z"
+  }
+}
+```
+
+#### `DELETE /edge-types/:id`
+Удалить тип связи.
+
+**Параметры:**
+- `id` - UUID типа связи
+
+**Заголовки:**
+```
+Authorization: Bearer YOUR_JWT_TOKEN
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "EdgeType deleted successfully"
+}
+```
+
+**Ограничения:**
+- Возвращает `404 Not Found` если тип связи не существует
+- Если к типу связи привязаны существующие связи (edges), удаление будет заблокировано БД (RESTRICT constraint)
+
+**Semantic Types (Семантические типы):**
+
+| Тип | Описание | Типичный вес | Использование |
+|-----|----------|--------------|---------------|
+| `supports` | Поддерживает, подтверждает | +1.0 | Экспериментальное подтверждение теории |
+| `contradicts` | Противоречит, опровергает | -1.0 | Противоречащие факты или наблюдения |
+| `derives_from` | Выводится из, следует из | +0.5 | Математический вывод или логическое следствие |
+| `part_of` | Является частью | 0 | Иерархическая связь, компонент системы |
+| `requires` | Требует, зависит от | 0 | Зависимость или предусловие |
+| `custom` | Пользовательский тип | 0 | Для нестандартных типов связей |
+
 ### Тестовые endpoints
 
 #### `GET /just-test`
@@ -377,10 +910,39 @@ backend/
 ├── src/
 │   ├── auth/                    # Модуль аутентификации
 │   │   ├── strategies/
-│   │   │   └── google.strategy.ts
+│   │   │   ├── google.strategy.ts  # Google OAuth strategy
+│   │   │   └── jwt.strategy.ts     # JWT validation strategy
 │   │   ├── auth.controller.ts   # Auth endpoints
 │   │   ├── auth.module.ts
 │   │   └── auth.service.ts      # JWT generation
+│   ├── domains/                 # Модуль доменов знаний
+│   │   ├── dto/
+│   │   │   ├── create-domain.dto.ts
+│   │   │   └── update-domain.dto.ts
+│   │   ├── domains.controller.ts
+│   │   ├── domains.module.ts
+│   │   └── domains.service.ts
+│   ├── node-types/              # Модуль типов узлов
+│   │   ├── dto/
+│   │   │   ├── create-node-type.dto.ts
+│   │   │   └── update-node-type.dto.ts
+│   │   ├── node-types.controller.ts
+│   │   ├── node-types.module.ts
+│   │   └── node-types.service.ts
+│   ├── edge-types/              # Модуль типов связей
+│   │   ├── dto/
+│   │   │   ├── create-edge-type.dto.ts
+│   │   │   └── update-edge-type.dto.ts
+│   │   ├── edge-types.controller.ts
+│   │   ├── edge-types.module.ts
+│   │   └── edge-types.service.ts
+│   ├── entities/                # TypeORM entities
+│   │   ├── domain.entity.ts
+│   │   ├── node-type.entity.ts
+│   │   ├── edge-type.entity.ts
+│   │   ├── oauth-account.entity.ts
+│   │   ├── user.entity.ts
+│   │   └── index.ts
 │   ├── app.controller.ts        # Основные endpoints
 │   ├── app.module.ts            # Root module
 │   ├── app.service.ts
