@@ -349,6 +349,384 @@ Authorization: Bearer YOUR_JWT_TOKEN
 - Возвращает `403 Forbidden` если пользователь не создатель
 - Возвращает `404 Not Found` если домен не существует
 
+### Nodes (Узлы графа)
+
+Управление узлами графа знаний. Узлы представляют собой статьи/концепции с поддержкой EditorJS контента.
+
+#### `GET /nodes`
+Получить список всех узлов. Требует JWT аутентификацию.
+
+**Заголовки:**
+```
+Authorization: Bearer YOUR_JWT_TOKEN
+```
+
+**Query параметры (опциональные):**
+- `domain_id` - UUID домена для фильтрации
+- `type_id` - UUID типа узла для фильтрации
+- `status` - статус узла (`draft`, `published`, `archived`)
+- `tags` - теги через запятую (например: `physics,quantum`)
+
+**Примеры запросов:**
+```bash
+# Получить все узлы
+curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  http://localhost:3000/nodes
+
+# Получить опубликованные узлы домена
+curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  "http://localhost:3000/nodes?domain_id=550e8400-e29b-41d4-a716-446655440000&status=published"
+
+# Получить узлы по тегам
+curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  "http://localhost:3000/nodes?tags=physics,quantum"
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "count": 2,
+  "data": [
+    {
+      "id": "880e8400-e29b-41d4-a716-446655440001",
+      "title": "Quantum Mechanics Basics",
+      "slug": "quantum-mechanics-basics",
+      "excerpt": "Introduction to quantum mechanics principles",
+      "cover_image": "https://example.com/cover.jpg",
+      "content": {
+        "blocks": [
+          {
+            "type": "header",
+            "data": { "text": "Quantum Mechanics", "level": 1 }
+          },
+          {
+            "type": "paragraph",
+            "data": { "text": "Quantum mechanics is..." }
+          }
+        ],
+        "version": "2.28.0"
+      },
+      "reading_time": 5,
+      "tags": ["physics", "quantum"],
+      "status": "published",
+      "domain_id": "550e8400-e29b-41d4-a716-446655440000",
+      "type_id": "660e8400-e29b-41d4-a716-446655440001",
+      "creator_id": "...",
+      "published_at": "2024-02-01T10:00:00.000Z",
+      "created_at": "2024-01-28T10:00:00.000Z",
+      "updated_at": "2024-02-01T10:00:00.000Z",
+      "domain": {
+        "id": "550e8400-e29b-41d4-a716-446655440000",
+        "name": "Physics Theories",
+        "slug": "physics-theories"
+      },
+      "type": {
+        "id": "660e8400-e29b-41d4-a716-446655440001",
+        "name": "Theory",
+        "icon": "science",
+        "color": "#1890ff"
+      },
+      "creator": {
+        "id": "...",
+        "username": "user",
+        "email": "user@example.com"
+      }
+    }
+  ]
+}
+```
+
+#### `GET /nodes/search`
+Полнотекстовый поиск узлов по заголовку и описанию.
+
+**Query параметры:**
+- `q` - поисковый запрос
+
+**Пример:**
+```bash
+curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  "http://localhost:3000/nodes/search?q=quantum"
+```
+
+**Response:** Список узлов, содержащих запрос в title или excerpt
+
+#### `GET /nodes/:id`
+Получить один узел по ID.
+
+**Параметры:**
+- `id` - UUID узла
+
+**Пример:**
+```bash
+curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  http://localhost:3000/nodes/880e8400-e29b-41d4-a716-446655440001
+```
+
+#### `GET /nodes/slug/:slug`
+Получить узел по slug (URL-friendly идентификатор).
+
+**Параметры:**
+- `slug` - slug узла
+
+**Пример:**
+```bash
+curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  http://localhost:3000/nodes/slug/quantum-mechanics-basics
+```
+
+#### `GET /nodes/by-domain/:domainId`
+Получить все узлы конкретного домена.
+
+**Параметры:**
+- `domainId` - UUID домена
+
+**Query параметры:**
+- `status` - опциональный фильтр по статусу
+
+**Пример:**
+```bash
+curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  http://localhost:3000/nodes/by-domain/550e8400-e29b-41d4-a716-446655440000?status=published
+```
+
+#### `GET /nodes/by-type/:typeId`
+Получить все узлы конкретного типа.
+
+**Параметры:**
+- `typeId` - UUID типа узла
+
+**Пример:**
+```bash
+curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  http://localhost:3000/nodes/by-type/660e8400-e29b-41d4-a716-446655440001
+```
+
+#### `GET /nodes/by-tags`
+Получить узлы по тегам.
+
+**Query параметры:**
+- `tags` - теги через запятую
+
+**Пример:**
+```bash
+curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  "http://localhost:3000/nodes/by-tags?tags=physics,quantum"
+```
+
+#### `POST /nodes`
+Создать новый узел.
+
+**Заголовки:**
+```
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: application/json
+```
+
+**Body:**
+```json
+{
+  "title": "Double Slit Experiment",
+  "slug": "double-slit-experiment",
+  "excerpt": "Famous quantum mechanics experiment",
+  "cover_image": "https://example.com/double-slit.jpg",
+  "content": {
+    "blocks": [
+      {
+        "type": "header",
+        "data": {
+          "text": "The Double Slit Experiment",
+          "level": 1
+        }
+      },
+      {
+        "type": "paragraph",
+        "data": {
+          "text": "This experiment demonstrates the wave-particle duality..."
+        }
+      },
+      {
+        "type": "image",
+        "data": {
+          "url": "https://example.com/diagram.png",
+          "caption": "Experiment setup"
+        }
+      }
+    ],
+    "version": "2.28.0"
+  },
+  "content_html": "<h1>The Double Slit Experiment</h1><p>This experiment...</p>",
+  "reading_time": 8,
+  "tags": ["experiment", "quantum", "wave-particle"],
+  "status": "draft",
+  "domain_id": "550e8400-e29b-41d4-a716-446655440000",
+  "type_id": "660e8400-e29b-41d4-a716-446655440002",
+  "data": {
+    "methodology": "Laboratory experiment",
+    "year": "1801"
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Node created successfully",
+  "data": {
+    "id": "880e8400-e29b-41d4-a716-446655440002",
+    "title": "Double Slit Experiment",
+    "slug": "double-slit-experiment",
+    "status": "draft",
+    "creator_id": "...",
+    "created_at": "2024-02-01T10:00:00.000Z"
+  }
+}
+```
+
+**Обязательные поля:**
+- `title` - заголовок узла
+- `slug` - URL-friendly идентификатор (уникальный)
+- `domain_id` - UUID домена
+- `type_id` - UUID типа узла
+
+**Опциональные поля:**
+- `excerpt` - краткое описание для превью
+- `cover_image` - URL обложки
+- `content` - EditorJS JSON контент
+- `content_html` - кэшированный HTML
+- `reading_time` - время чтения в минутах
+- `translations` - переводы
+- `data` - пользовательские данные согласно schema типа
+- `tags` - массив тегов
+- `status` - статус (default: "draft")
+- `published_at` - дата публикации
+
+#### `PUT /nodes/:id`
+Обновить существующий узел.
+
+**Параметры:**
+- `id` - UUID узла
+
+**Body:** (все поля опциональны)
+```json
+{
+  "title": "Updated Title",
+  "content": {
+    "blocks": [...]
+  },
+  "tags": ["physics", "quantum", "updated"],
+  "reading_time": 10
+}
+```
+
+**Ограничения:**
+- Только создатель узла может его обновлять
+- Возвращает `403 Forbidden` если пользователь не создатель
+
+#### `PATCH /nodes/:id/publish`
+Опубликовать узел (изменить статус на "published").
+
+**Параметры:**
+- `id` - UUID узла
+
+**Пример:**
+```bash
+curl -X PATCH \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  http://localhost:3000/nodes/880e8400-e29b-41d4-a716-446655440001/publish
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Node published successfully",
+  "data": {
+    "id": "880e8400-e29b-41d4-a716-446655440001",
+    "status": "published",
+    "published_at": "2024-02-01T10:00:00.000Z"
+  }
+}
+```
+
+#### `PATCH /nodes/:id/archive`
+Архивировать узел (изменить статус на "archived").
+
+**Параметры:**
+- `id` - UUID узла
+
+**Пример:**
+```bash
+curl -X PATCH \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  http://localhost:3000/nodes/880e8400-e29b-41d4-a716-446655440001/archive
+```
+
+#### `DELETE /nodes/:id`
+Удалить узел.
+
+**Параметры:**
+- `id` - UUID узла
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Node deleted successfully"
+}
+```
+
+**Ограничения:**
+- Только создатель узла может его удалить
+- Возвращает `403 Forbidden` если пользователь не создатель
+- При удалении узла также удаляются все его связи (edges) в силу CASCADE constraint
+
+**Node Statuses (Статусы узлов):**
+
+| Статус | Описание | Использование |
+|--------|----------|---------------|
+| `draft` | Черновик | Узел в процессе создания, виден только автору |
+| `published` | Опубликован | Узел опубликован и виден всем пользователям |
+| `archived` | Архивирован | Узел скрыт из основного списка, но не удален |
+
+**EditorJS Content Structure:**
+
+Поле `content` использует формат [Editor.js](https://editorjs.io/):
+```json
+{
+  "blocks": [
+    {
+      "type": "header",
+      "data": { "text": "Header text", "level": 1 }
+    },
+    {
+      "type": "paragraph",
+      "data": { "text": "Paragraph text" }
+    },
+    {
+      "type": "list",
+      "data": {
+        "style": "unordered",
+        "items": ["Item 1", "Item 2"]
+      }
+    },
+    {
+      "type": "code",
+      "data": { "code": "const x = 1;" }
+    },
+    {
+      "type": "image",
+      "data": {
+        "url": "https://example.com/image.jpg",
+        "caption": "Image caption"
+      }
+    }
+  ],
+  "version": "2.28.0"
+}
+```
+
 ### Node Types (Типы узлов)
 
 Управление типами узлов графа знаний. Типы узлов определяют категории для узлов в конкретном домене (например: Теория, Эксперимент, Аксиома).
@@ -882,6 +1260,368 @@ Authorization: Bearer YOUR_JWT_TOKEN
 | `requires` | Требует, зависит от | 0 | Зависимость или предусловие |
 | `custom` | Пользовательский тип | 0 | Для нестандартных типов связей |
 
+### Edges (Связи между узлами)
+
+Управление связями между узлами графа знаний. Связи (edges) соединяют узлы (nodes) и имеют определенный тип (edge_type).
+
+#### `GET /edges`
+Получить список всех связей. Требует JWT аутентификацию.
+
+**Заголовки:**
+```
+Authorization: Bearer YOUR_JWT_TOKEN
+```
+
+**Query параметры (опциональные):**
+- `node_id` - UUID узла для фильтрации (возвращает все связи узла: входящие и исходящие)
+- `domain_id` - UUID домена для фильтрации
+
+**Примеры запросов:**
+```bash
+# Получить все связи
+curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  http://localhost:3000/edges
+
+# Получить все связи конкретного узла
+curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  http://localhost:3000/edges?node_id=880e8400-e29b-41d4-a716-446655440001
+
+# Получить связи по домену
+curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  http://localhost:3000/edges?domain_id=550e8400-e29b-41d4-a716-446655440000
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "count": 2,
+  "data": [
+    {
+      "id": "990e8400-e29b-41d4-a716-446655440001",
+      "source_id": "880e8400-e29b-41d4-a716-446655440001",
+      "target_id": "880e8400-e29b-41d4-a716-446655440002",
+      "type_id": "770e8400-e29b-41d4-a716-446655440001",
+      "description": "This experiment supports the theory",
+      "metadata": {
+        "confidence": 0.95,
+        "references": ["doi:10.1234/example"]
+      },
+      "created_at": "2024-02-01T10:00:00.000Z",
+      "updated_at": "2024-02-01T10:00:00.000Z",
+      "source": {
+        "id": "880e8400-e29b-41d4-a716-446655440001",
+        "title": "Quantum Theory",
+        "slug": "quantum-theory"
+      },
+      "target": {
+        "id": "880e8400-e29b-41d4-a716-446655440002",
+        "title": "Double Slit Experiment",
+        "slug": "double-slit-experiment"
+      },
+      "type": {
+        "id": "770e8400-e29b-41d4-a716-446655440001",
+        "name": "Supports",
+        "slug": "supports",
+        "semantic_type": "supports",
+        "color": "#52c41a"
+      }
+    }
+  ]
+}
+```
+
+**Доступ:**
+- Требует валидный JWT токен
+- Доступен всем авторизованным пользователям
+
+#### `GET /edges/:id`
+Получить одну связь по ID.
+
+**Параметры:**
+- `id` - UUID связи
+
+**Пример:**
+```bash
+curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  http://localhost:3000/edges/990e8400-e29b-41d4-a716-446655440001
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "990e8400-e29b-41d4-a716-446655440001",
+    "source_id": "880e8400-e29b-41d4-a716-446655440001",
+    "target_id": "880e8400-e29b-41d4-a716-446655440002",
+    "type_id": "770e8400-e29b-41d4-a716-446655440001",
+    "description": "This experiment supports the theory",
+    "metadata": {
+      "confidence": 0.95
+    },
+    "source": {
+      "id": "880e8400-e29b-41d4-a716-446655440001",
+      "title": "Quantum Theory"
+    },
+    "target": {
+      "id": "880e8400-e29b-41d4-a716-446655440002",
+      "title": "Double Slit Experiment"
+    },
+    "type": {
+      "name": "Supports",
+      "semantic_type": "supports"
+    }
+  }
+}
+```
+
+#### `GET /edges/node/:nodeId`
+Получить все связи узла (входящие и исходящие).
+
+**Параметры:**
+- `nodeId` - UUID узла
+
+**Пример:**
+```bash
+curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  http://localhost:3000/edges/node/880e8400-e29b-41d4-a716-446655440001
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "outgoing": [
+      {
+        "id": "990e8400-e29b-41d4-a716-446655440001",
+        "target_id": "880e8400-e29b-41d4-a716-446655440002",
+        "type": {
+          "name": "Supports",
+          "semantic_type": "supports"
+        },
+        "target": {
+          "title": "Double Slit Experiment"
+        }
+      }
+    ],
+    "incoming": [
+      {
+        "id": "990e8400-e29b-41d4-a716-446655440003",
+        "source_id": "880e8400-e29b-41d4-a716-446655440003",
+        "type": {
+          "name": "Derives From",
+          "semantic_type": "derives_from"
+        },
+        "source": {
+          "title": "Classical Mechanics"
+        }
+      }
+    ]
+  },
+  "count": {
+    "outgoing": 1,
+    "incoming": 1,
+    "total": 2
+  }
+}
+```
+
+#### `GET /edges/node/:nodeId/outgoing`
+Получить исходящие связи узла (где узел является источником).
+
+**Параметры:**
+- `nodeId` - UUID узла
+
+**Пример:**
+```bash
+curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  http://localhost:3000/edges/node/880e8400-e29b-41d4-a716-446655440001/outgoing
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "count": 1,
+  "data": [
+    {
+      "id": "990e8400-e29b-41d4-a716-446655440001",
+      "source_id": "880e8400-e29b-41d4-a716-446655440001",
+      "target_id": "880e8400-e29b-41d4-a716-446655440002",
+      "type": {
+        "name": "Supports"
+      },
+      "target": {
+        "title": "Double Slit Experiment"
+      }
+    }
+  ]
+}
+```
+
+#### `GET /edges/node/:nodeId/incoming`
+Получить входящие связи узла (где узел является целью).
+
+**Параметры:**
+- `nodeId` - UUID узла
+
+**Пример:**
+```bash
+curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  http://localhost:3000/edges/node/880e8400-e29b-41d4-a716-446655440001/incoming
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "count": 1,
+  "data": [
+    {
+      "id": "990e8400-e29b-41d4-a716-446655440003",
+      "source_id": "880e8400-e29b-41d4-a716-446655440003",
+      "target_id": "880e8400-e29b-41d4-a716-446655440001",
+      "type": {
+        "name": "Derives From"
+      },
+      "source": {
+        "title": "Classical Mechanics"
+      }
+    }
+  ]
+}
+```
+
+#### `POST /edges`
+Создать новую связь между узлами.
+
+**Заголовки:**
+```
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: application/json
+```
+
+**Body:**
+```json
+{
+  "source_id": "880e8400-e29b-41d4-a716-446655440001",
+  "target_id": "880e8400-e29b-41d4-a716-446655440002",
+  "type_id": "770e8400-e29b-41d4-a716-446655440001",
+  "description": "This experiment provides evidence for the theory",
+  "metadata": {
+    "confidence": 0.95,
+    "references": ["doi:10.1234/example"],
+    "notes": "Strong correlation observed"
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Edge created successfully",
+  "data": {
+    "id": "990e8400-e29b-41d4-a716-446655440004",
+    "source_id": "880e8400-e29b-41d4-a716-446655440001",
+    "target_id": "880e8400-e29b-41d4-a716-446655440002",
+    "type_id": "770e8400-e29b-41d4-a716-446655440001",
+    "description": "This experiment provides evidence for the theory",
+    "metadata": {
+      "confidence": 0.95,
+      "references": ["doi:10.1234/example"]
+    },
+    "created_at": "2024-02-01T10:00:00.000Z"
+  }
+}
+```
+
+**Обязательные поля:**
+- `source_id` - UUID узла-источника
+- `target_id` - UUID узла-цели
+- `type_id` - UUID типа связи
+
+**Опциональные поля:**
+- `description` - текстовое описание связи
+- `metadata` - дополнительные данные в формате JSON
+  - `confidence` - уровень уверенности (0-1)
+  - `references` - массив ссылок на источники
+  - `notes` - заметки
+  - Любые другие пользовательские поля
+
+**Ограничения:**
+- Self-loops запрещены: `source_id` и `target_id` должны быть разными
+- Комбинация `(source_id, target_id, type_id)` должна быть уникальной
+- Возвращает `400 Bad Request` при попытке создать self-loop
+- Возвращает `409 Conflict` если такая связь уже существует
+
+#### `PUT /edges/:id`
+Обновить существующую связь.
+
+**Параметры:**
+- `id` - UUID связи
+
+**Заголовки:**
+```
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: application/json
+```
+
+**Body:** (все поля опциональны)
+```json
+{
+  "type_id": "770e8400-e29b-41d4-a716-446655440002",
+  "description": "Updated description",
+  "metadata": {
+    "confidence": 0.98,
+    "updated_notes": "Additional evidence found"
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Edge updated successfully",
+  "data": {
+    "id": "990e8400-e29b-41d4-a716-446655440001",
+    "type_id": "770e8400-e29b-41d4-a716-446655440002",
+    "description": "Updated description",
+    "metadata": {
+      "confidence": 0.98
+    },
+    "updated_at": "2024-02-01T11:00:00.000Z"
+  }
+}
+```
+
+**Примечание:** Нельзя изменить `source_id` и `target_id` после создания связи. Для изменения узлов нужно удалить старую связь и создать новую.
+
+#### `DELETE /edges/:id`
+Удалить связь.
+
+**Параметры:**
+- `id` - UUID связи
+
+**Заголовки:**
+```
+Authorization: Bearer YOUR_JWT_TOKEN
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Edge deleted successfully"
+}
+```
+
+**Ограничения:**
+- Возвращает `404 Not Found` если связь не существует
+
 ### Тестовые endpoints
 
 #### `GET /just-test`
@@ -929,6 +1669,13 @@ backend/
 │   │   ├── node-types.controller.ts
 │   │   ├── node-types.module.ts
 │   │   └── node-types.service.ts
+│   ├── nodes/                   # Модуль узлов графа
+│   │   ├── dto/
+│   │   │   ├── create-node.dto.ts
+│   │   │   └── update-node.dto.ts
+│   │   ├── nodes.controller.ts
+│   │   ├── nodes.module.ts
+│   │   └── nodes.service.ts
 │   ├── edge-types/              # Модуль типов связей
 │   │   ├── dto/
 │   │   │   ├── create-edge-type.dto.ts
@@ -936,10 +1683,19 @@ backend/
 │   │   ├── edge-types.controller.ts
 │   │   ├── edge-types.module.ts
 │   │   └── edge-types.service.ts
+│   ├── edges/                   # Модуль связей между узлами
+│   │   ├── dto/
+│   │   │   ├── create-edge.dto.ts
+│   │   │   └── update-edge.dto.ts
+│   │   ├── edges.controller.ts
+│   │   ├── edges.module.ts
+│   │   └── edges.service.ts
 │   ├── entities/                # TypeORM entities
 │   │   ├── domain.entity.ts
 │   │   ├── node-type.entity.ts
 │   │   ├── edge-type.entity.ts
+│   │   ├── node.entity.ts
+│   │   ├── edge.entity.ts
 │   │   ├── oauth-account.entity.ts
 │   │   ├── user.entity.ts
 │   │   └── index.ts
