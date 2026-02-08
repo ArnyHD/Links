@@ -4,6 +4,10 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
 import AuthCallback from './pages/AuthCallback';
 import Home from './pages/Home';
+import CreateDomain from './pages/CreateDomain';
+import EditDomain from './pages/EditDomain';
+import DomainDetails from './pages/DomainDetails';
+import CreateNode from './pages/CreateNode';
 
 function App() {
   return (
@@ -17,6 +21,38 @@ function App() {
             element={
               <ProtectedRoute>
                 <Home />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/domains/create"
+            element={
+              <ProtectedRoute>
+                <CreateDomain />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/domains/:id/edit"
+            element={
+              <ProtectedRoute>
+                <EditDomain />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/domains/:id/details"
+            element={
+              <ProtectedRoute>
+                <DomainDetails />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/nodes/create"
+            element={
+              <ProtectedRoute>
+                <CreateNode />
               </ProtectedRoute>
             }
           />

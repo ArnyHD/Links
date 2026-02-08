@@ -35,6 +35,21 @@ export class NodeTypesController {
   }
 
   /**
+   * GET /node-types/by-domain/:domainId
+   * Получить все типы узлов для конкретного домена
+   * ВАЖНО: Этот маршрут должен быть ДО @Get(':id'), иначе ':id' перехватит 'by-domain'
+   */
+  @Get('by-domain/:domainId')
+  async getNodeTypesByDomain(@Param('domainId') domainId: string) {
+    const nodeTypes = await this.nodeTypesService.findByDomain(domainId);
+    return {
+      success: true,
+      count: nodeTypes.length,
+      data: nodeTypes,
+    };
+  }
+
+  /**
    * GET /node-types/:id
    * Получить один тип узла по ID
    */
@@ -44,20 +59,6 @@ export class NodeTypesController {
     return {
       success: true,
       data: nodeType,
-    };
-  }
-
-  /**
-   * GET /node-types/by-domain/:domainId
-   * Получить все типы узлов для конкретного домена
-   */
-  @Get('by-domain/:domainId')
-  async getNodeTypesByDomain(@Param('domainId') domainId: string) {
-    const nodeTypes = await this.nodeTypesService.findByDomain(domainId);
-    return {
-      success: true,
-      count: nodeTypes.length,
-      data: nodeTypes,
     };
   }
 

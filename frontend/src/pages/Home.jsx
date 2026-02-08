@@ -1,17 +1,31 @@
 import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { domainsService } from '../services/domains';
+import DomainCard from '../components/DomainCard';
 import './Home.css';
 
 function Home() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const { user, logout } = useAuth();
   const [domains, setDomains] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
 
   useEffect(() => {
     fetchDomains();
-  }, []);
+
+    // Show success message if redirected after domain creation
+    if (location.state?.message) {
+      setSuccessMessage(location.state.message);
+      // Clear message after 5 seconds
+      setTimeout(() => setSuccessMessage(null), 5000);
+      // Clear location state
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   const fetchDomains = async () => {
     try {
@@ -25,6 +39,10 @@ function Home() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleOpenDomain = (domainId) => {
+    navigate(`/domains/${domainId}/edit`);
   };
 
   return (
@@ -53,11 +71,27 @@ function Home() {
       <main className="main-content">
         <div className="content-wrapper">
           <div className="page-header">
-            <h2>Домены знаний</h2>
-            <p className="page-description">
-              Список доступных доменов для работы с графами знаний
-            </p>
+            <div className="page-title-section">
+              <h2>Домены знаний</h2>
+              <p className="page-description">
+                Список доступных доменов для работы с графами знаний
+              </p>
+            </div>
+            <button
+              className="create-button"
+              onClick={() => navigate('/domains/create')}
+            >
+              <span className="create-icon">+</span>
+              Создать домен
+            </button>
           </div>
+
+          {successMessage && (
+            <div className="success-message">
+              <span className="success-icon">✓</span>
+              <span>{successMessage}</span>
+            </div>
+          )}
 
           {loading && (
             <div className="loading-state">
@@ -86,48 +120,11 @@ function Home() {
           {!loading && !error && domains.length > 0 && (
             <div className="domains-grid">
               {domains.map((domain) => (
-                <div key={domain.id} className="domain-card">
-                  <div className="domain-header">
-                    <h3>{domain.name}</h3>
-                    <span className={`status-badge ${domain.is_active ? 'active' : 'inactive'}`}>
-                      {domain.is_active ? 'Активен' : 'Неактивен'}
-                    </span>
-                  </div>
-
-                  <p className="domain-description">
-                    {domain.description || 'Описание отсутствует'}
-                  </p>
-
-                  <div className="domain-meta">
-                    <div className="meta-item">
-                      <span className="meta-label">Создатель:</span>
-                      <span className="meta-value">
-                        {domain.creator?.username || 'Неизвестно'}
-                      </span>
-                    </div>
-                    <div className="meta-item">
-                      <span className="meta-label">Доступ:</span>
-                      <span className="meta-value">
-                        {domain.is_public ? 'Публичный' : 'Приватный'}
-                      </span>
-                    </div>
-                    <div className="meta-item">
-                      <span className="meta-label">Создан:</span>
-                      <span className="meta-value">
-                        {new Date(domain.created_at).toLocaleDateString('ru-RU')}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="domain-actions">
-                    <button className="action-button primary">
-                      Открыть
-                    </button>
-                    <button className="action-button secondary">
-                      Подробнее!
-                    </button>
-                  </div>
-                </div>
+                <DomainCard
+                  key={domain.id}
+                  domain={domain}
+                  onOpen={handleOpenDomain}
+                />
               ))}
             </div>
           )}

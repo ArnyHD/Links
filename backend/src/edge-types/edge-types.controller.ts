@@ -35,6 +35,21 @@ export class EdgeTypesController {
   }
 
   /**
+   * GET /edge-types/by-domain/:domainId
+   * Получить все типы связей для конкретного домена
+   * ВАЖНО: Этот маршрут должен быть ДО @Get(':id'), иначе ':id' перехватит 'by-domain'
+   */
+  @Get('by-domain/:domainId')
+  async getEdgeTypesByDomain(@Param('domainId') domainId: string) {
+    const edgeTypes = await this.edgeTypesService.findByDomain(domainId);
+    return {
+      success: true,
+      count: edgeTypes.length,
+      data: edgeTypes,
+    };
+  }
+
+  /**
    * GET /edge-types/:id
    * Получить один тип связи по ID
    */
@@ -44,20 +59,6 @@ export class EdgeTypesController {
     return {
       success: true,
       data: edgeType,
-    };
-  }
-
-  /**
-   * GET /edge-types/by-domain/:domainId
-   * Получить все типы связей для конкретного домена
-   */
-  @Get('by-domain/:domainId')
-  async getEdgeTypesByDomain(@Param('domainId') domainId: string) {
-    const edgeTypes = await this.edgeTypesService.findByDomain(domainId);
-    return {
-      success: true,
-      count: edgeTypes.length,
-      data: edgeTypes,
     };
   }
 
