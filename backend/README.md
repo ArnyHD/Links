@@ -1783,6 +1783,225 @@ PORT=3001
 
 ## Тестирование
 
+### Test Infrastructure
+
+The backend includes comprehensive unit test coverage using Jest and @nestjs/testing.
+
+**Current Test Statistics:**
+- ✅ 110 tests passing across 11 test suites
+- 🎯 Modules covered: Auth (9), Domains (24), NodeTypes (21), EdgeTypes (16), Nodes (24), Edges (16)
+- ⚡ Execution time: ~6 seconds
+
+**Test Stack:**
+- Jest 30.2.0 - Test runner and assertion library
+- @nestjs/testing 10.4.22 - NestJS testing utilities
+- supertest 7.2.2 - HTTP assertions for e2e tests
+- ts-jest 29.4.6 - TypeScript preprocessor
+
+### Running Tests
+
+```bash
+# Run all unit tests
+npm run test
+
+# Run tests in watch mode (auto-rerun on changes)
+npm run test:watch
+
+# Run tests with coverage report
+npm run test:cov
+
+# Run e2e tests (when implemented)
+npm run test:e2e
+
+# Run e2e tests in watch mode
+npm run test:e2e:watch
+
+# Debug tests
+npm run test:debug
+```
+
+### Test Structure
+
+**Unit Tests** (co-located with source files):
+```
+src/
+├── auth/
+│   └── auth.service.spec.ts           # Auth service tests (9 tests)
+├── domains/
+│   ├── domains.service.spec.ts        # Domains service tests (14 tests)
+│   └── domains.controller.spec.ts     # Domains controller tests (10 tests)
+├── node-types/
+│   ├── node-types.service.spec.ts     # NodeTypes service tests (11 tests)
+│   └── node-types.controller.spec.ts  # NodeTypes controller tests (10 tests)
+├── edge-types/
+│   ├── edge-types.service.spec.ts     # EdgeTypes service tests (9 tests)
+│   └── edge-types.controller.spec.ts  # EdgeTypes controller tests (7 tests)
+├── nodes/
+│   ├── nodes.service.spec.ts          # Nodes service tests (13 tests)
+│   └── nodes.controller.spec.ts       # Nodes controller tests (11 tests)
+└── edges/
+    ├── edges.service.spec.ts          # Edges service tests (9 tests)
+    └── edges.controller.spec.ts       # Edges controller tests (7 tests)
+```
+
+**E2E Tests** (integration tests - future implementation):
+```
+test/
+├── jest-e2e.json                      # E2E test configuration
+├── test-utils.ts                      # Test utilities and fixtures
+├── auth.e2e-spec.ts                   # Auth flow e2e tests
+├── domains.e2e-spec.ts                # Domains CRUD e2e tests
+├── node-types.e2e-spec.ts             # NodeTypes e2e tests
+├── edge-types.e2e-spec.ts             # EdgeTypes e2e tests
+├── nodes.e2e-spec.ts                  # Nodes e2e tests
+└── edges.e2e-spec.ts                  # Edges e2e tests
+```
+
+### Test Database Setup
+
+E2E tests use a separate test database: `knowledge_graph_test`
+
+**Create test database:**
+```bash
+# Connect to PostgreSQL
+set PGPASSWORD=postgres
+psql -h localhost -U postgres
+
+# Create test database
+CREATE DATABASE knowledge_graph_test;
+\q
+
+# Run database setup scripts
+cd database
+psql -h localhost -U postgres -d knowledge_graph_test -f run_all.sql
+```
+
+**Test environment configuration** (`.env.test`):
+```env
+NODE_ENV=test
+PORT=3001
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=postgres
+DB_PASSWORD=postgres
+DB_DATABASE=knowledge_graph_test
+JWT_SECRET=test-jwt-secret-key-12345
+GOOGLE_CLIENT_ID=test-google-client-id
+GOOGLE_CLIENT_SECRET=test-google-secret
+GOOGLE_CALLBACK_URL=http://localhost:3001/auth/google/callback
+FRONTEND_URL=http://localhost:5173
+```
+
+### Test Utilities
+
+**`test/test-utils.ts`** provides:
+- `generateTestJWT(user)` - Generate JWT tokens for authenticated endpoint testing
+- `cleanDatabase(repositories)` - Clean test data between tests
+- `createMockRepository()` - Create mock TypeORM repositories for unit tests
+- `TEST_USER` - Standard test user fixture
+- `TEST_DOMAIN` - Standard test domain fixture
+
+**Example usage:**
+```typescript
+import { generateTestJWT, TEST_USER, createMockRepository } from '../../test/test-utils';
+
+// Generate JWT for authenticated requests
+const token = generateTestJWT(TEST_USER);
+
+// Create mock repository for unit tests
+const mockRepository = createMockRepository();
+mockRepository.find.mockResolvedValue([mockData]);
+```
+
+### Test Patterns
+
+**Service Tests:**
+- Mock TypeORM repositories using `createMockRepository()`
+- Test business logic and data validation
+- Test authorization checks (ownership, permissions)
+- Test error handling (NotFoundException, ForbiddenException, BadRequestException)
+
+**Controller Tests:**
+- Mock service layer with `jest.fn()`
+- Test response formatting: `{ success, count, data }` or `{ success, message, data }`
+- Test user ID extraction from request object
+- Don't test auth guards (covered in e2e tests)
+
+**Complex Query Tests:**
+- Simple CRUD operations tested in unit tests
+- Complex query builder operations deferred to e2e tests
+- Example: `findAll()` with multiple filters tested in e2e
+
+### API Documentation
+
+Interactive API documentation is available via Swagger UI:
+
+**Access Swagger:**
+```bash
+npm run start:dev
+# Visit: http://localhost:3000/api/docs
+```
+
+**Swagger Features:**
+- 📚 Complete API reference for all 41 endpoints
+- 🔐 JWT authentication testing ("Authorize" button)
+- 🧪 Interactive request/response testing
+- 📖 English language documentation
+- 🏷️ Organized by tags: auth, domains, node-types, edge-types, nodes, edges
+
+**Current Documentation Status:**
+- ✅ Swagger infrastructure configured
+- ✅ Domains module fully documented (template)
+- ⏳ Auth, NodeTypes, EdgeTypes, Nodes, Edges modules - pending documentation
+
+### Coverage Reports
+
+Run coverage analysis:
+```bash
+npm run test:cov
+```
+
+Coverage reports are generated in `coverage/` directory:
+- `coverage/lcov-report/index.html` - Interactive HTML report
+- `coverage/coverage-final.json` - JSON coverage data
+
+**Coverage excludes:**
+- Module files (`*.module.ts`)
+- DTOs (`*.dto.ts`)
+- Entities (`*.entity.ts`)
+- Index files (`index.ts`)
+- Bootstrap file (`main.ts`)
+
+### Future Testing Steps
+
+**Priority 1: E2E Tests Implementation**
+- [ ] Auth flow e2e tests (Google OAuth callback, JWT validation)
+- [ ] Domains CRUD e2e tests with authorization checks
+- [ ] NodeTypes and EdgeTypes e2e tests with domain filtering
+- [ ] Nodes e2e tests (EditorJS content, search, status transitions)
+- [ ] Edges e2e tests (graph operations, self-loop prevention)
+- [ ] Target: 7 e2e test suites covering critical user journeys
+
+**Priority 2: Complete API Documentation**
+- [ ] Document Auth controller endpoints with @ApiOperation decorators
+- [ ] Document NodeTypes controller (6 endpoints)
+- [ ] Document EdgeTypes controller (6 endpoints)
+- [ ] Document Nodes controller (12 endpoints - most complex)
+- [ ] Document Edges controller (8 endpoints)
+- [ ] Add DTOs documentation with @ApiProperty decorators (8 remaining DTOs)
+
+**Priority 3: CI/CD Integration**
+- [ ] GitHub Actions workflow for automated testing
+- [ ] Run tests on pull requests
+- [ ] Coverage reporting integration (Codecov/Coveralls)
+- [ ] Automated Swagger documentation deployment
+
+**Priority 4: Advanced Testing**
+- [ ] Integration tests with real database transactions
+- [ ] Performance tests for graph traversal queries
+- [ ] Load testing for API endpoints
+- [ ] Security testing (OWASP top 10)
+
 ### Проверка работоспособности
 
 ```bash
@@ -1791,6 +2010,9 @@ curl http://localhost:3000/just-test?query=test
 
 # Проверка статуса авторизации
 curl http://localhost:3000/auth/status
+
+# Проверка Swagger UI
+curl http://localhost:3000/api/docs
 ```
 
 ### Тестирование Google OAuth
